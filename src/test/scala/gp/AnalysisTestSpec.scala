@@ -81,8 +81,8 @@ object AnalysisTestSpec extends Specification with IOLiteChecker {
   def update4(p: AnnPerson): Update0 =
     UpdateQueryGenerator.genAnnotation(p, "person").update
 
-  def update5(p: AnnPerson): Update0 =                    
-   UpdateQueryGenerator.genMacro(p, "person").update
+//  def update5(p: AnnPerson): Update0 =                    
+//   UpdateQueryGenerator.genMacro(p, "person").update
 
   (drop.run *> dropSeq.run *>
     create.run *> createSeq.run).transact(transactor).unsafePerformIO
@@ -94,8 +94,8 @@ object AnalysisTestSpec extends Specification with IOLiteChecker {
   check(update3(IhnPerson(36l, "Jerry", None)))
   check(update4(AnnPerson(36l, "Jerry", None)))
   
-  println(update5(AnnPerson(36l, "Jerry", None))
-  println(UpdateQueryGenerator.genMacro(AnnPerson(36l, "Jerry", None), "turpitude")))
+//  println(update5(AnnPerson(36l, "Jerry", None))
+//  println(UpdateQueryGenerator.genMacro(AnnPerson(36l, "Jerry", None), "turpitude")))
 
   checkOutput(select1(5l))
 

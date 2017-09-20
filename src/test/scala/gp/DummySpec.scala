@@ -34,6 +34,14 @@ class DummySpec extends Specification {
   def update4(p: FooBaz): Update0 =
     UpdateQueryGenerator.genAnnotation(p, "aber").update
 
+
+
   println(update4(FooBaz(36, 342, "tada")))
 
+  val fb = FooBaz(36, 342, "tada")
+  import UpdateQueryGenerator._
+  //println(desugar(genMacro(fb, "aber")))
+   println(genMacro[FooBaz](fb, "aber"))
+
+  println(callFirst(FooBaz(347, 111, "bobo")))
 }
