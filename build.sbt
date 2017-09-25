@@ -12,3 +12,7 @@ libraryDependencies ++= Seq(
 		   "org.tpolecat" %% "doobie-hikari-cats"     % doobieVersion,
 		   "org.tpolecat" %% "doobie-postgres-cats"   % doobieVersion,
     		   "org.tpolecat" %% "doobie-specs2-cats"     % doobieVersion)
+
+scalacOptions += "-Yshow-trees-stringified"
+//scalacOptions ++= Seq("-Ymacro-debug-lite")
+//-Ymacro-debug-verbose

@@ -39,9 +39,14 @@ class DummySpec extends Specification {
   println(update4(FooBaz(36, 342, "tada")))
 
   val fb = FooBaz(36, 342, "tada")
-  import UpdateQueryGenerator._
+  import MacroMethodCalls._
   //println(desugar(genMacro(fb, "aber")))
-   println(genMacro[FooBaz](fb, "aber"))
+//   println(genMacro[FooBaz](fb, "aber"))
 
-  println(callFirst(FooBaz(347, 111, "bobo")))
+  //println(callFirst(FooBaz(347, 111, "bobo")))
+
+  //printCall1(FooBaz(737, 111, "bobo"))
+  //printCall2(FooBaz(737, 111, "bobo"))
+
+  printCallList(FooBaz(737, 111, "bobo"))
 }
