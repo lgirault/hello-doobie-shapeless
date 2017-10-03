@@ -6,7 +6,7 @@ import org.specs2.mutable.Specification
 import doobie.imports._
 import cats.implicits._
 import fs2.interop.cats._
-import shapeless.LabelledGeneric
+
 
 case class IhnPerson(id: Long, name: String, age: Option[Short]) extends Ided
 
@@ -52,6 +52,13 @@ object AnalysisTestSpec extends Specification with IOLiteChecker {
   //  def nextVal =
   //    sql"SELECT nextval('person_id_seq')".query[Int]
 
+  def insert0a(p : AnnPerson): Update0 =
+    InsertQueryGenerator.genInsert(p, "person").update
+
+  def insert0b(p : AnnPerson): Update0 =
+    InsertQueryGenerator.genMacro(p, "person").update
+
+
   def insert1(id: Long, name: String, age: Option[Short]): Update0 =
     sql"insert into person (id, name, age) values ($id, $name, $age)".update
 
@@ -81,19 +88,23 @@ object AnalysisTestSpec extends Specification with IOLiteChecker {
   def update4(p: AnnPerson): Update0 =
     UpdateQueryGenerator.genAnnotation(p, "person").update
 
-//  def update5(p: AnnPerson): Update0 =                    
-//   UpdateQueryGenerator.genMacro(p, "person").update
+  def update5(p: AnnPerson): Update0 =
+   UpdateQueryGenerator.genMacro(p, "person").update
 
   (drop.run *> dropSeq.run *>
     create.run *> createSeq.run).transact(transactor).unsafePerformIO
 
   checkOutput(nextVal)
+  check(insert0a(AnnPerson(36l, "Jerry", None)))
+  check(insert0b(AnnPerson(36l, "Jerry", None)))
+
   check(insert1(36l, "toto", Some(8)))
   check(update1(IhnPerson(36l, "Jerry", None)))
   check(update2(IhnPerson(36l, "Jerry", None)))
   check(update3(IhnPerson(36l, "Jerry", None)))
   check(update4(AnnPerson(36l, "Jerry", None)))
-  
+  check(update5(AnnPerson(36l, "Jerry", None)))
+
 //  println(update5(AnnPerson(36l, "Jerry", None))
 //  println(UpdateQueryGenerator.genMacro(AnnPerson(36l, "Jerry", None), "turpitude")))
 

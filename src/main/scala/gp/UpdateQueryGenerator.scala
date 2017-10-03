@@ -27,24 +27,40 @@ object UpdateQueryGenerator {
     //    val method = c.weakTypeOf[T].decls.filterNot(_.isTerm).head
     //    val call = c.Expr( Select(t.tree, method.name) )
     //    println("call => " + call)
-    val (fieldNames, fieldCalls) = c.weakTypeOf[T].decls.filter(s => s.isTerm && !s.isMethod).map { s =>
-      (s.name, c.Expr(Select(t, s.name)))
-      //    (s.name,
-      //        c.Expr( Select(Select(t, TypeApply(q"asInstanceOf"), c.weakTypeOf[T] ))
-      //c.Expr(Select(q""" $t.asInstanceOf[${c.weakTypeOf[T]}]""", s.name)))
+    val clazz = c.weakTypeOf[T]
+    val (fieldNames, fieldCalls) = clazz.decls.collect{
+      case m : MethodSymbol if m.isCaseAccessor =>
+        (m.name, c.Expr(Select(t, m.name)))
     }.unzip
+
+
+
+
+    val idParam = symbolOf[T].asClass.primaryConstructor.typeSignature.paramLists.collect{
+      case l => l.find{
+        s => s.annotations.exists{ a =>
+          a.tree.tpe == symbolOf[Id].asType.toType
+        }
+      }
+    }.head.head
+
+    val idGet = clazz.decls.collect{
+      case m : MethodSymbol if m.isCaseAccessor && m.name == idParam.name =>
+        c.Expr(Select(t, m.name))
+    }.head
 
     val sc = c.freshName(TermName("temp"))
 
-    println(fieldNames)
-    println(fieldCalls)
+
+    val whereClause = Literal(Constant(s" where ${idParam.name} = "))
+
     val emptyString = Literal(Constant(""))
     val q0 = fieldNames match {
       case Nil => ???
-      case f :: Nil => List(Literal(Constant(s"$f = ")), emptyString)
+      case f :: Nil => List(Literal(Constant(s"$f = ")), whereClause, emptyString)
       case f :: fs =>
 
-        val fsProcessed = fs.foldRight(List(emptyString)) {
+        val fsProcessed = fs.foldRight(List(whereClause, emptyString)) {
           case (f0, acc) => Literal(Constant(s", $f0 = ")) :: acc
         }
 
@@ -52,12 +68,14 @@ object UpdateQueryGenerator {
 
     }
 
-    val updateFragment = q""" new StringContext("update ", " set ").s($tableName)"""
+    val Literal(Constant(h)) = q0.head
+
+    val updateFragment =  Literal(Constant(s"update ${c.eval[String](tableName)} set $h"))
 
     c.Expr[Fragment](
       q"""{
-         val $sc = new StringContext($updateFragment + ${q0.head}, ..${q0.tail})
-         $sc.fr(..$fieldCalls)
+         val $sc = new StringContext($updateFragment, ..${q0.tail})
+         $sc.fr(..$fieldCalls, $idGet)
          }
          """)
 
@@ -110,8 +128,7 @@ object UpdateQueryGenerator {
 
     val whereClause0 = new StringContext(s"where $idFieldName = ", "")
     val whereClause: Fragment = {
-      import shapeless.::
-      whereClause0.fr(idValue :: HNil)
+      whereClause0.fr(HNil.::(idValue))
     }
 
     genUpdateFragment(t, tableName) ++ whereClause

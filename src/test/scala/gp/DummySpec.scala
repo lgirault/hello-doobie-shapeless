@@ -5,7 +5,6 @@ import doobie.imports._
 import shapeless._
 import shapeless.ops.hlist._
 import shapeless.labelled.FieldType
-import shapeless.ops.hlist._
 
 case class FooBar(id: Long, foo: Int, bar: String) extends Ided
 
